@@ -1,0 +1,7 @@
+{
+  "name": "Spades Sales Engine",
+  "description": "High-tech lead magnet generating ICP analysis with a cinematic experience.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

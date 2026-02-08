@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spades Sales Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Georgia:ital@0;1&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+              serif: ['Georgia', 'serif'],
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+              'fade-in-up': 'fadeInUp 0.7s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* --- 1. BASE STYLES --- */
+      body {
+        background-color: #09090b; /* Landing is Dark */
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
+      }
+
+      /* --- 2. GLASS MODE (Result & Loading) --- */
+      body.glass-mode {
+          background-color: transparent !important; /* Force transparent to see ambient layer */
+          color: #1a1a1a;
+      }
+
+      /* --- 3. AMBIENT PHYSICS LAYER (LAVA LAMP) --- */
+      .ambient-layer { 
+          position: fixed; 
+          top: 0; 
+          left: 0; 
+          width: 100vw; 
+          height: 100vh; 
+          z-index: -10; 
+          overflow: hidden; 
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 1.5s ease;
+          background: #f0f2f5; /* Light Base for Contrast */
+      }
+
+      body.glass-mode .ambient-layer {
+          opacity: 1;
+      }
+
+      /* ORGANIC MORPHING BLOBS */
+      .blob { 
+          position: absolute; 
+          filter: blur(80px); /* Heavy Blur */
+          opacity: 0.6; 
+          will-change: transform, border-radius;
+      }
+
+      /* Blob A: Vibrant Purple - Starts Top Left */
+      .blob-purple { 
+          top: 0; 
+          left: 0; 
+          width: 60vw; 
+          height: 60vw; 
+          background: #7c3aed; 
+          animation: floatA 54s infinite alternate ease-in-out;
+          border-radius: 40% 50% 30% 70%;
+      }
+
+      /* Blob B: Hot Pink / Magenta - Starts Top Right */
+      .blob-pink { 
+          top: 0; 
+          right: 0; 
+          width: 60vw; 
+          height: 60vw; 
+          background: #db2777; 
+          animation: floatB 48s infinite alternate ease-in-out;
+          border-radius: 60% 40% 70% 30%;
+      }
+
+      /* Blob C: Deep Indigo - Starts Bottom Left */
+      .blob-indigo { 
+          bottom: 0; 
+          left: 0; 
+          width: 55vw; 
+          height: 55vw; 
+          background: #4338ca; 
+          opacity: 0.5;
+          animation: floatC 60s infinite alternate ease-in-out;
+          border-radius: 50% 50% 30% 70%;
+      }
+
+      /* Blob D: Pure White (The Highlight) - Starts Bottom Right */
+      .blob-white {
+          bottom: 0;
+          right: 0;
+          width: 50vw; 
+          height: 50vw; 
+          background: #ffffff;
+          opacity: 0.8;
+          animation: floatD 51s infinite alternate ease-in-out;
+          border-radius: 45% 55% 40% 60%;
+      }
+
+      /* --- INDEPENDENT ANIMATIONS (Full Viewport Traversal) --- */
+      
+      /* A: Moves from Top-Left towards Bottom-Right */
+      @keyframes floatA {
+          0% { transform: translate(-20vw, -20vh) scale(1) rotate(0deg); }
+          100% { transform: translate(60vw, 50vh) scale(1.1) rotate(45deg); }
+      }
+
+      /* B: Moves from Top-Right towards Bottom-Left */
+      @keyframes floatB {
+          0% { transform: translate(10vw, -10vh) scale(1) rotate(0deg); }
+          100% { transform: translate(-60vw, 60vh) scale(0.9) rotate(-30deg); }
+      }
+
+      /* C: Moves from Bottom-Left towards Top-Right */
+      @keyframes floatC {
+          0% { transform: translate(-10vw, 10vh) scale(1.1) rotate(0deg); }
+          100% { transform: translate(70vw, -70vh) scale(0.9) rotate(60deg); }
+      }
+
+      /* D: Moves from Bottom-Right towards Top-Left */
+      @keyframes floatD {
+          0% { transform: translate(10vw, 10vh) scale(0.9) rotate(0deg); }
+          100% { transform: translate(-70vw, -70vh) scale(1.2) rotate(-45deg); }
+      }
+
+      /* --- 4. THE GLASS OS MATERIAL --- */
+      .glass-panel {
+          background: rgba(255, 255, 255, 0.30) !important; /* 30% Opacity */
+          backdrop-filter: blur(50px) saturate(150%) !important;
+          -webkit-backdrop-filter: blur(50px) saturate(150%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.5) !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+          border-radius: 30px !important;
+          color: #111 !important;
+          transition: transform 0.3s ease;
+      }
+
+      /* Inner Glass (Glass on Glass) */
+      .glass-inner { 
+          background: rgba(255, 255, 255, 0.4) !important; 
+          border: 1px solid rgba(255, 255, 255, 0.5) !important; 
+          backdrop-filter: blur(10px);
+          border-radius: 16px;
+      }
+
+      /* UTILS */
+      .section-label {
+          font-size: 13px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          color: #64748b;
+          margin-bottom: 12px;
+          padding-left: 8px;
+      }
+
+      /* Voice Bubble Positioning & Size */
+      aqx-voice-bubble {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        transform: scale(0.85);
+        transform-origin: bottom right;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <!-- THE PHYSICS ENGINE (Background) -->
+    <div class="ambient-layer">
+        <div class="blob blob-purple"></div>
+        <div class="blob blob-pink"></div>
+        <div class="blob blob-indigo"></div>
+        <div class="blob blob-white"></div>
+    </div>
+    
+    <div id="root"></div>
+
+    <!-- ATLAS VOICE BUBBLE -->
+    <script>
+      (function() {
+        var script = document.createElement("script");
+        script.src = "https://cdn.youratlas.com/scripts/aqx-voice-bubble.prod.min.js";
+        script.async = true;
+        script.onload = function() {
+          var bubble = document.createElement("aqx-voice-bubble");
+          bubble.setAttribute("campaign-id", "c93c6273-31e5-4d37-a6bc-37d342fc8a72");
+          bubble.setAttribute("size", "sm");
+          document.body.appendChild(bubble);
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
